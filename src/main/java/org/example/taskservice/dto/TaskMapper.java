@@ -2,10 +2,15 @@ package org.example.taskservice.dto;
 
 import org.example.taskservice.model.Step;
 import org.example.taskservice.model.Task;
+import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.Optional;
+
+@Component
 public class TaskMapper {
 
-    public Task taskMapper(TaskCreateDTO taskCreateDTO, String ownerUsername) {
+    public Task map(TaskCreateDTO taskCreateDTO, String ownerUsername) {
         Task task = new Task();
 
         task.setTitle(taskCreateDTO.getTitle());
@@ -15,8 +20,12 @@ public class TaskMapper {
         task.setPriority(taskCreateDTO.getPriority());
         task.setDeadline(taskCreateDTO.getDeadline());
 
-        task.setSteps(taskCreateDTO.getSteps().stream()
-                .map(step -> new Step(step, task)).toList());
+        task.setSteps(Optional.ofNullable(taskCreateDTO.getSteps())
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(step -> new Step(step, task))
+                .toList());
+
 
         task.setCollaborators(taskCreateDTO.getCollaborators());
         task.setOwner(ownerUsername);
@@ -24,7 +33,7 @@ public class TaskMapper {
         return task;
     }
 
-    public TaskDTO taskMapper(Task task) {
+    public TaskDTO map(Task task) {
         TaskDTO taskDTO = new TaskDTO();
 
         taskDTO.setTitle(task.getTitle());
@@ -35,9 +44,12 @@ public class TaskMapper {
         taskDTO.setDeadline(task.getDeadline());
         taskDTO.setProgress(task.getProgress());
 
-        taskDTO.setSteps(task.getSteps().stream()
+        taskDTO.setSteps(Optional.ofNullable(task.getSteps())
+                .orElse(Collections.emptyList())
+                .stream()
                 .map(StepDTO::new)
                 .toList());
+
 
         taskDTO.setCreatedAt(task.getCreatedAt());
         taskDTO.setUpdatedAt(task.getUpdatedAt());

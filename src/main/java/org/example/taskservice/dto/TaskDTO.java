@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.example.taskservice.model.Priority;
 import org.example.taskservice.model.Status;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class TaskDTO {
     private String description;
     private Status status;
     private Priority priority;
-    private LocalDateTime deadline;
+    private LocalDate deadline;
     private int progress;
     private List<StepDTO> steps;
     private LocalDateTime createdAt;
