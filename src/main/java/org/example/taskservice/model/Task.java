@@ -1,6 +1,7 @@
 package org.example.taskservice.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -41,6 +42,7 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private Priority priority = Priority.LOW;
 
+    @FutureOrPresent
     private LocalDate deadline;
 
     @Min(0)

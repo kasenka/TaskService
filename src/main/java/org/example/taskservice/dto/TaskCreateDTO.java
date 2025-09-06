@@ -27,7 +27,7 @@ public class TaskCreateDTO {
     private Status status = Status.TODO;
     private Priority priority = Priority.LOW;
 
-    @FutureOrPresent(message = "Дата дедлайна уже прошла")
+//    @FutureOrPresent(message = "Дата дедлайна уже прошла")
     private LocalDate deadline;
 
     @Size(min = 1, max = 100, message = "Допустимый размер от 1 до 100 шагов")
