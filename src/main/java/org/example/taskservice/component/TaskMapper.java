@@ -1,5 +1,8 @@
-package org.example.taskservice.dto;
+package org.example.taskservice.component;
 
+import org.example.taskservice.dto.StepDTO;
+import org.example.taskservice.dto.TaskCreateDTO;
+import org.example.taskservice.dto.TaskDTO;
 import org.example.taskservice.model.Step;
 import org.example.taskservice.model.Task;
 import org.springframework.stereotype.Component;

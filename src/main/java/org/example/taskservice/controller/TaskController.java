@@ -1,5 +1,6 @@
 package org.example.taskservice.controller;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.example.taskservice.dto.TaskCreateDTO;
 import org.example.taskservice.dto.TaskDTO;
@@ -9,13 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -51,12 +50,11 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(task);
 
-        }catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
+        }catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         }
     }
-
 
     @PostMapping("/create")
     public ResponseEntity<?> createTask(@RequestHeader(name = "X-User-Username") String username,
@@ -80,6 +78,21 @@ public class TaskController {
                     .body(Map.of("error", "Что-то пошло не так"));
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{task_id}/step/{step_id}/update")
+    public ResponseEntity<?> updateStep(@RequestHeader(name = "X-User-Username") String username,
+                                        @PathVariable long task_id,
+                                        @PathVariable long step_id){
+        try{
+            TaskDTO taskDTO = taskService.updateStep(username, task_id, step_id);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(taskDTO);
+        }catch (EntityNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", e.getMessage()));
         }
     }

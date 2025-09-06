@@ -1,6 +1,8 @@
 package org.example.taskservice.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +43,8 @@ public class Task {
 
     private LocalDate deadline;
 
+    @Min(0)
+    @Max(100)
     private int progress = 0;
 
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
