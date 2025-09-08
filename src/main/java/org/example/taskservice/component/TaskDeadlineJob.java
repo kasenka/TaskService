@@ -18,6 +18,6 @@ public class TaskDeadlineJob implements Job {
     public void execute(JobExecutionContext context) {
         LocalDate now = LocalDate.now();
         int updated = taskRepository.markExpired(now);
-        System.out.println("Expired steps updated: " + updated);
+        System.out.println("Expired tasks updated: " + updated);
     }
 }

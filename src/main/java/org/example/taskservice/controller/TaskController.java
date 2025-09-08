@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.example.taskservice.dto.TaskCreateDTO;
 import org.example.taskservice.dto.TaskDTO;
+import org.example.taskservice.dto.TaskUpdateDTO;
 import org.example.taskservice.model.Side;
 import org.example.taskservice.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,30 @@ public class TaskController {
                                         @PathVariable long step_id){
         try{
             TaskDTO taskDTO = taskService.updateStep(username, task_id, step_id);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(taskDTO);
+        }catch (EntityNotFoundException e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{task_id}/update")
+    public ResponseEntity<?> updateTask(@RequestHeader(name = "X-User-Username") String username,
+                                        @RequestBody @Valid TaskUpdateDTO taskUpdateDTO,
+                                        BindingResult bindingResult,
+                                        @PathVariable long task_id){
+        if (bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getAllErrors().stream()
+                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                    .toList();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("errors", errors));
+        }
+
+        try {
+            TaskDTO taskDTO = taskService.updateTask(taskUpdateDTO, task_id, username);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(taskDTO);

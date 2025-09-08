@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.example.taskservice.dto.TaskCreateDTO;
 import org.example.taskservice.dto.TaskDTO;
 import org.example.taskservice.component.TaskMapper;
+import org.example.taskservice.dto.TaskUpdateDTO;
 import org.example.taskservice.model.*;
 import org.example.taskservice.repository.StepRepository;
 import org.example.taskservice.repository.TaskRepository;
@@ -95,5 +96,25 @@ public class TaskService {
         Task taskWithNewProgress = updateProgressAndStatus(task.get());
 
         return taskMapper.map(taskWithNewProgress);
+    }
+
+    public TaskDTO updateTask(TaskUpdateDTO taskUpdateDTO, long task_id, String username){
+        Optional<Task> task = taskRepository.findById(task_id);
+
+        if (task.isEmpty() || !task.get().getOwner().equals(username)){
+            throw new EntityNotFoundException("У Вас нет задачи с таким ID");
+        }
+
+        if (taskUpdateDTO.getTitle() != null && !taskUpdateDTO.getTitle().isBlank()){
+            task.get().setTitle(taskUpdateDTO.getTitle());
+        }if (taskUpdateDTO.getDescription() != null && !taskUpdateDTO.getDescription().isBlank()){
+            task.get().setDescription(taskUpdateDTO.getDescription());
+        }if (taskUpdateDTO.getPriority() != null){
+            task.get().setPriority(taskUpdateDTO.getPriority());
+        }
+
+        taskRepository.save(task.get());
+
+        return taskMapper.map(task.get());
     }
 }
