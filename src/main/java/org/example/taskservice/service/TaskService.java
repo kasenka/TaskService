@@ -1,10 +1,8 @@
 package org.example.taskservice.service;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.example.taskservice.dto.TaskCreateDTO;
-import org.example.taskservice.dto.TaskDTO;
+import org.example.taskservice.dto.*;
 import org.example.taskservice.component.TaskMapper;
-import org.example.taskservice.dto.TaskUpdateDTO;
 import org.example.taskservice.model.*;
 import org.example.taskservice.repository.StepRepository;
 import org.example.taskservice.repository.TaskRepository;
@@ -76,13 +74,13 @@ public class TaskService {
         return null;
     }
 
-    public TaskDTO updateStep(String username, long task_id, long step_id) { // шаг в таксе выглядит как чекбокс
-        Optional<Task> task = taskRepository.findById(task_id);
+    public TaskDTO updateStep(String username, long taskId, long stepId) { // шаг в таксе выглядит как чекбокс
+        Optional<Task> task = taskRepository.findById(taskId);
 
         if (task.isEmpty() || !task.get().getOwner().equals(username)){
             throw new EntityNotFoundException("У Вас нет задачи с таким ID");
         }
-        Optional<Step> step = stepRepository.findById(step_id);
+        Optional<Step> step = stepRepository.findById(stepId);
         if (step.isEmpty() || step.get().getTask() != task.get()){
             throw new EntityNotFoundException("У задачи нет такого шага");
         }
@@ -98,8 +96,21 @@ public class TaskService {
         return taskMapper.map(taskWithNewProgress);
     }
 
-    public TaskDTO updateTask(TaskUpdateDTO taskUpdateDTO, long task_id, String username){
-        Optional<Task> task = taskRepository.findById(task_id);
+    public StepDTO createTaskStep(String username, long taskId, StepCreateDTO stepCreateDTO) {
+        Optional<Task> task = taskRepository.findById(taskId);
+
+        if (task.isEmpty() || !task.get().getOwner().equals(username)){
+            throw new EntityNotFoundException("У Вас нет задачи с таким ID");
+        }
+
+        Step step = new Step(stepCreateDTO.getDescription(), task.get());
+        stepRepository.save(step);
+
+        return new StepDTO(step);
+    }
+
+    public TaskDTO updateTask(TaskUpdateDTO taskUpdateDTO, long taskId, String username){
+        Optional<Task> task = taskRepository.findById(taskId);
 
         if (task.isEmpty() || !task.get().getOwner().equals(username)){
             throw new EntityNotFoundException("У Вас нет задачи с таким ID");
@@ -117,4 +128,28 @@ public class TaskService {
 
         return taskMapper.map(task.get());
     }
+
+    public void deleteTask(String username, long taskId) {
+        Optional<Task> task = taskRepository.findById(taskId);
+
+        if (task.isEmpty() || !task.get().getOwner().equals(username)){
+            throw new EntityNotFoundException("У Вас нет задачи с таким ID");
+        }
+        taskRepository.delete(task.get());
+    }
+
+    public void deleteStep(String username, long taskId, long stepId) {
+        Optional<Task> task = taskRepository.findById(taskId);
+
+        if (task.isEmpty() || !task.get().getOwner().equals(username)){
+            throw new EntityNotFoundException("У Вас нет задачи с таким ID");
+        }
+        Optional<Step> step = stepRepository.findById(stepId);
+        if (step.isEmpty() || step.get().getTask() != task.get()){
+            throw new EntityNotFoundException("У задачи нет такого шага");
+        }
+        stepRepository.delete(step.get());
+    }
 }
+
+
