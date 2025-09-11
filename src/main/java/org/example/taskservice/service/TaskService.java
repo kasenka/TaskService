@@ -149,6 +149,7 @@ public class TaskService {
             throw new EntityNotFoundException("У задачи нет такого шага");
         }
         stepRepository.delete(step.get());
+        updateProgressAndStatus(task.get());
     }
 }
 

@@ -160,7 +160,7 @@ public class TaskController {
         }
     }
 
-    @DeleteMapping("{taskId}}/step/{stepId}/delete")
+    @DeleteMapping("{taskId}/step/{stepId}/delete")
     public ResponseEntity<?> deleteTask(@RequestHeader(name = "X-User-Username") String username,
                                         @PathVariable long taskId,
                                         @PathVariable long stepId){
