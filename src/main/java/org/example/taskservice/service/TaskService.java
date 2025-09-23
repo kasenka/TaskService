@@ -1,6 +1,7 @@
 package org.example.taskservice.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.example.taskservice.dto.*;
 import org.example.taskservice.component.TaskMapper;
 import org.example.taskservice.model.*;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class TaskService {
@@ -77,9 +80,10 @@ public class TaskService {
     public TaskDTO updateStep(String username, long taskId, long stepId) { // шаг в таксе выглядит как чекбокс
         Optional<Task> task = taskRepository.findById(taskId);
 
-        if (task.isEmpty() || !task.get().getOwner().equals(username)){
+        if (task.isEmpty() || task.get().getOwner().equals(username) || task.get().getCollaborators().contains(username)) {
             throw new EntityNotFoundException("У Вас нет задачи с таким ID");
         }
+
         Optional<Step> step = stepRepository.findById(stepId);
         if (step.isEmpty() || step.get().getTask() != task.get()){
             throw new EntityNotFoundException("У задачи нет такого шага");
@@ -99,7 +103,7 @@ public class TaskService {
     public StepDTO createTaskStep(String username, long taskId, StepCreateDTO stepCreateDTO) {
         Optional<Task> task = taskRepository.findById(taskId);
 
-        if (task.isEmpty() || !task.get().getOwner().equals(username)){
+        if (task.isEmpty() || task.get().getOwner().equals(username) || task.get().getCollaborators().contains(username)) {
             throw new EntityNotFoundException("У Вас нет задачи с таким ID");
         }
 
@@ -112,7 +116,7 @@ public class TaskService {
     public TaskDTO updateTask(TaskUpdateDTO taskUpdateDTO, long taskId, String username){
         Optional<Task> task = taskRepository.findById(taskId);
 
-        if (task.isEmpty() || !task.get().getOwner().equals(username)){
+        if (task.isEmpty() || task.get().getOwner().equals(username) || task.get().getCollaborators().contains(username)) {
             throw new EntityNotFoundException("У Вас нет задачи с таким ID");
         }
 
@@ -141,15 +145,38 @@ public class TaskService {
     public void deleteStep(String username, long taskId, long stepId) {
         Optional<Task> task = taskRepository.findById(taskId);
 
-        if (task.isEmpty() || !task.get().getOwner().equals(username)){
+        if (task.isEmpty() || task.get().getOwner().equals(username) || task.get().getCollaborators().contains(username)) {
             throw new EntityNotFoundException("У Вас нет задачи с таким ID");
         }
+
         Optional<Step> step = stepRepository.findById(stepId);
         if (step.isEmpty() || step.get().getTask() != task.get()){
             throw new EntityNotFoundException("У задачи нет такого шага");
         }
         stepRepository.delete(step.get());
         updateProgressAndStatus(task.get());
+    }
+
+    @Transactional
+    public void updateDeleteUserTasks(String username, String event){
+        List<Task> tasksWithDeletedOwner = taskRepository.findByOwner(username)
+                .orElse(List.of())
+                .stream()
+                .map(t -> {t.setOwner(username + "_" + event);
+                            return t; })
+                .toList();
+
+        taskRepository.saveAll(tasksWithDeletedOwner);
+
+        List<Task> tasksWithDeletedCollaborators = taskRepository.findByCollaboratorsContaining(username)
+                .orElse(List.of())
+                .stream()
+                .map(t -> {t.getCollaborators().remove(username);
+                    t.getCollaborators().add(username + "_"  + event);
+                    return t; })
+                .toList();
+
+        taskRepository.saveAll(tasksWithDeletedCollaborators);
     }
 }
 
